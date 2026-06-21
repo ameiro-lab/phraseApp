@@ -74,6 +74,12 @@ fun ListScreen(
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
+                    Button(
+                        onClick = onAddClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("フレーズを登録")
+                    }
                     OutlinedTextField(
                         value = uiState.searchQuery,
                         onValueChange = onSearchChange,

@@ -15,6 +15,8 @@ data class PhraseUiState(
     val categories: List<CategoryEntity> = emptyList(),
     /** Phrases visible after search and category filtering. */
     val phrases: List<PhraseWithCategories> = emptyList(),
+    /** All saved phrases without the current list filters. */
+    val allPhrases: List<PhraseWithCategories> = emptyList(),
     /** User-facing transient error message. */
     val message: String? = null
 )

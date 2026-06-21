@@ -10,6 +10,9 @@ sealed class Screen(val route: String) {
     /** Card browsing screen route. */
     data object Card : Screen("card")
 
+    /** New phrase registration screen route shown as a bottom tab. */
+    data object Register : Screen("register")
+
     /** Settings screen route. */
     data object Setting : Screen("setting")
 

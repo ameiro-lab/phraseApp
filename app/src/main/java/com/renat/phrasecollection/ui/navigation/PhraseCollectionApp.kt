@@ -29,7 +29,7 @@ fun PhraseCollectionApp(viewModel: PhraseViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val bottomScreens = listOf(Screen.List, Screen.Card, Screen.Setting)
+    val bottomScreens = listOf(Screen.List, Screen.Register, Screen.Card, Screen.Setting)
 
     Scaffold(
         bottomBar = {
@@ -48,6 +48,7 @@ fun PhraseCollectionApp(viewModel: PhraseViewModel) {
                             Text(
                                 when (screen) {
                                     Screen.List -> "一覧"
+                                    Screen.Register -> "登録"
                                     Screen.Card -> "カード"
                                     Screen.Setting -> "設定"
                                     Screen.Edit -> ""
@@ -77,6 +78,23 @@ fun PhraseCollectionApp(viewModel: PhraseViewModel) {
                     onMessageShown = viewModel::clearMessage
                 )
             }
+            composable(Screen.Register.route) {
+                EditScreen(
+                    paddingValues = paddingValues,
+                    uiState = uiState,
+                    phraseId = -1L,
+                    onSaveNew = { text, memo, categoryIds ->
+                        viewModel.addPhrase(text, memo, categoryIds) {
+                            navController.navigate(Screen.List.route) {
+                                popUpTo(Screen.List.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    onBack = { navController.navigate(Screen.List.route) },
+                    onMessageShown = viewModel::clearMessage
+                )
+            }
             composable(
                 route = Screen.Edit.route,
                 arguments = listOf(navArgument("phraseId") { type = NavType.LongType })
@@ -101,7 +119,11 @@ fun PhraseCollectionApp(viewModel: PhraseViewModel) {
                 )
             }
             composable(Screen.Card.route) {
-                CardScreen(paddingValues = paddingValues, phrases = uiState.phrases)
+                CardScreen(
+                    paddingValues = paddingValues,
+                    categories = uiState.categories,
+                    phrases = uiState.allPhrases
+                )
             }
             composable(Screen.Setting.route) {
                 SettingScreen(paddingValues = paddingValues)
@@ -116,6 +138,7 @@ fun PhraseCollectionApp(viewModel: PhraseViewModel) {
 private fun tabIcon(screen: Screen): String =
     when (screen) {
         Screen.List -> "≡"
+        Screen.Register -> "+"
         Screen.Card -> "□"
         Screen.Setting -> "i"
         Screen.Edit -> ""

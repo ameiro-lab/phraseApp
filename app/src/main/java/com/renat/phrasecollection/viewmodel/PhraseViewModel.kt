@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -18,29 +17,26 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel that manages phrase list, search, filters, edits, and deletion.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class PhraseViewModel(private val repository: PhraseRepository) : ViewModel() {
     private val searchQuery = MutableStateFlow("")
     private val selectedCategoryIds = MutableStateFlow<Set<Int>>(emptySet())
     private val message = MutableStateFlow<String?>(null)
-
-    private val phraseSource = searchQuery.flatMapLatest { query ->
-        if (query.isBlank()) repository.getAllPhrases() else repository.searchPhrases(query.trim())
-    }
 
     /** Screen state observed by Compose UI. */
     val uiState: StateFlow<PhraseUiState> = combine(
         searchQuery,
         selectedCategoryIds,
         repository.categories,
-        phraseSource,
+        repository.getAllPhrases(),
         message
-    ) { query, selectedIds, categories, phrases, currentMessage ->
+    ) { query, selectedIds, categories, allPhrases, currentMessage ->
+        val searchedPhrases = filterBySearch(allPhrases, query)
         PhraseUiState(
             searchQuery = query,
             selectedCategoryIds = selectedIds,
             categories = categories,
-            phrases = filterByCategories(phrases, selectedIds),
+            phrases = filterByCategories(searchedPhrases, selectedIds),
+            allPhrases = allPhrases,
             message = currentMessage
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PhraseUiState())
@@ -102,7 +98,7 @@ class PhraseViewModel(private val repository: PhraseRepository) : ViewModel() {
 
     /** Returns a phrase from the current state by id when available. */
     fun findPhraseInState(phraseId: Long): PhraseWithCategories? =
-        uiState.value.phrases.firstOrNull { it.phrase.id == phraseId }
+        uiState.value.allPhrases.firstOrNull { it.phrase.id == phraseId }
 
     private fun validate(text: String, categoryIds: Set<Int>): Boolean {
         return when {
@@ -125,6 +121,18 @@ class PhraseViewModel(private val repository: PhraseRepository) : ViewModel() {
         if (selectedIds.isEmpty()) return phrases
         return phrases.filter { phrase ->
             phrase.categories.any { category -> category.id in selectedIds }
+        }
+    }
+
+    private fun filterBySearch(
+        phrases: List<PhraseWithCategories>,
+        query: String
+    ): List<PhraseWithCategories> {
+        val keyword = query.trim()
+        if (keyword.isEmpty()) return phrases
+        return phrases.filter { phrase ->
+            phrase.phrase.text.contains(keyword, ignoreCase = true) ||
+                phrase.phrase.memo.contains(keyword, ignoreCase = true)
         }
     }
 }

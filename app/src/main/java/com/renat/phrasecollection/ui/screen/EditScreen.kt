@@ -40,12 +40,12 @@ fun EditScreen(
     uiState: PhraseUiState,
     phraseId: Long,
     onSaveNew: (String, String, Set<Int>) -> Unit,
-    onUpdate: (PhraseEntity, String, String, Set<Int>) -> Unit,
-    onDelete: (PhraseEntity) -> Unit,
+    onUpdate: ((PhraseEntity, String, String, Set<Int>) -> Unit)? = null,
+    onDelete: ((PhraseEntity) -> Unit)? = null,
     onBack: () -> Unit,
     onMessageShown: () -> Unit
 ) {
-    val editingPhrase = uiState.phrases.firstOrNull { it.phrase.id == phraseId }
+    val editingPhrase = uiState.allPhrases.firstOrNull { it.phrase.id == phraseId }
     val isNew = phraseId == -1L
     val snackbarHostState = remember { SnackbarHostState() }
     var phraseText by rememberSaveable { mutableStateOf("") }
@@ -118,7 +118,7 @@ fun EditScreen(
                             onSaveNew(phraseText, memo, selectedCategoryIds)
                         } else {
                             editingPhrase?.let {
-                                onUpdate(it.phrase, phraseText, memo, selectedCategoryIds)
+                                onUpdate?.invoke(it.phrase, phraseText, memo, selectedCategoryIds)
                             }
                         }
                     },
@@ -129,7 +129,7 @@ fun EditScreen(
                 TextButton(onClick = onBack) {
                     Text("戻る")
                 }
-                if (!isNew && editingPhrase != null) {
+                if (!isNew && editingPhrase != null && onDelete != null) {
                     TextButton(onClick = { onDelete(editingPhrase.phrase) }) {
                         Text("削除")
                     }
