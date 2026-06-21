@@ -138,19 +138,21 @@ fun CardScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Text(
                             text = "答え",
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.primary,
                             textAlign = TextAlign.Center
                         )
+
                         Text(
                             text = current.phrase.memo.ifBlank { "メモはありません。" },
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             textAlign = TextAlign.Center
                         )
+
                         Text(
                             text = current.categories.joinToString(" / ") { it.name },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.secondary,
                             textAlign = TextAlign.Center
                         )
                     }

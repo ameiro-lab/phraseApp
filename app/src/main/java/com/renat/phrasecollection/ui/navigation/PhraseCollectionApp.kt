@@ -14,36 +14,78 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.material3.MaterialTheme
 import com.renat.phrasecollection.ui.screen.CardScreen
 import com.renat.phrasecollection.ui.screen.EditScreen
 import com.renat.phrasecollection.ui.screen.ListScreen
 import com.renat.phrasecollection.ui.screen.SettingScreen
 import com.renat.phrasecollection.viewmodel.PhraseViewModel
 
+
 /**
- * Top-level navigation container for all Compose screens.
+ * アプリ全体の画面遷移を管理するルート画面
  */
 @Composable
 fun PhraseCollectionApp(viewModel: PhraseViewModel) {
+
+    // Compose Navigationのコントローラ
     val navController = rememberNavController()
+
+    // ViewModelの状態を監視
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // 現在表示中の画面情報
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val bottomScreens = listOf(Screen.List, Screen.Register, Screen.Card, Screen.Setting)
+
+    // BottomNavigationに表示するタブ一覧
+    val bottomScreens = listOf(
+        Screen.List,
+        Screen.Register,
+        Screen.Card,
+        Screen.Setting
+    )
 
     Scaffold(
+
+        // 画面下部のナビゲーションバー
         bottomBar = {
-            NavigationBar {
+
+            NavigationBar(
+
+                // Theme.ktで管理する背景色
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+
+            ) {
+
+                // タブを生成
                 bottomScreens.forEach { screen ->
+
                     NavigationBarItem(
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+
+                        // 現在表示中タブ判定
+                        selected = currentDestination
+                            ?.hierarchy
+                            ?.any { it.route == screen.route } == true,
+
+                        // タブ押下時の画面遷移
                         onClick = {
                             navController.navigate(screen.route) {
-                                popUpTo(Screen.List.route) { saveState = true }
+
+                                // 一覧画面を基準に状態保存
+                                popUpTo(Screen.List.route) {
+                                    saveState = true
+                                }
+
+                                // 同一画面多重生成防止
                                 launchSingleTop = true
+
+                                // 保存済み状態復元
                                 restoreState = true
                             }
                         },
+
+                        // タブ名称
                         label = {
                             Text(
                                 when (screen) {
@@ -55,16 +97,27 @@ fun PhraseCollectionApp(viewModel: PhraseViewModel) {
                                 }
                             )
                         },
-                        icon = { Text(tabIcon(screen)) }
+
+                        // タブアイコン
+                        icon = {
+                            Text(tabIcon(screen))
+                        }
                     )
                 }
             }
         }
+
     ) { paddingValues ->
+
+        // 画面遷移定義
         NavHost(
             navController = navController,
+
+            // アプリ起動時の初期画面
             startDestination = Screen.List.route
         ) {
+
+            // 一覧画面
             composable(Screen.List.route) {
                 ListScreen(
                     paddingValues = paddingValues,
@@ -72,52 +125,107 @@ fun PhraseCollectionApp(viewModel: PhraseViewModel) {
                     onSearchChange = viewModel::updateSearchQuery,
                     onToggleCategory = viewModel::toggleCategoryFilter,
                     onClearCategories = viewModel::clearCategoryFilters,
-                    onAddClick = { navController.navigate(Screen.Edit.newRoute()) },
-                    onEditClick = { phraseId -> navController.navigate(Screen.Edit.editRoute(phraseId)) },
+
+                    // 編集画面へ遷移
+                    onEditClick = { phraseId ->
+                        navController.navigate(
+                            Screen.Edit.editRoute(phraseId)
+                        )
+                    },
+
                     onDeleteClick = viewModel::deletePhrase,
                     onMessageShown = viewModel::clearMessage
                 )
             }
+
+            // 新規登録画面
             composable(Screen.Register.route) {
                 EditScreen(
                     paddingValues = paddingValues,
                     uiState = uiState,
+
+                    // 新規登録モード
                     phraseId = -1L,
+
                     onSaveNew = { text, memo, categoryIds ->
                         viewModel.addPhrase(text, memo, categoryIds) {
+
+                            // 登録後は一覧へ戻る
                             navController.navigate(Screen.List.route) {
-                                popUpTo(Screen.List.route) { inclusive = true }
+                                popUpTo(Screen.List.route) {
+                                    inclusive = true
+                                }
                                 launchSingleTop = true
                             }
                         }
                     },
-                    onBack = { navController.navigate(Screen.List.route) },
+
+                    onBack = {
+                        navController.navigate(Screen.List.route)
+                    },
+
                     onMessageShown = viewModel::clearMessage
                 )
             }
+
+            // 編集画面
             composable(
                 route = Screen.Edit.route,
-                arguments = listOf(navArgument("phraseId") { type = NavType.LongType })
+                arguments = listOf(
+                    navArgument("phraseId") {
+                        type = NavType.LongType
+                    }
+                )
             ) { entry ->
-                val phraseId = entry.arguments?.getLong("phraseId") ?: -1L
+
+                // URLパラメータから対象ID取得
+                val phraseId =
+                    entry.arguments?.getLong("phraseId") ?: -1L
+
                 EditScreen(
                     paddingValues = paddingValues,
                     uiState = uiState,
                     phraseId = phraseId,
+
+                    // 新規保存
                     onSaveNew = { text, memo, categoryIds ->
-                        viewModel.addPhrase(text, memo, categoryIds) { navController.popBackStack() }
+                        viewModel.addPhrase(
+                            text,
+                            memo,
+                            categoryIds
+                        ) {
+                            navController.popBackStack()
+                        }
                     },
+
+                    // 更新保存
                     onUpdate = { phrase, text, memo, categoryIds ->
-                        viewModel.updatePhrase(phrase, text, memo, categoryIds) { navController.popBackStack() }
+                        viewModel.updatePhrase(
+                            phrase,
+                            text,
+                            memo,
+                            categoryIds
+                        ) {
+                            navController.popBackStack()
+                        }
                     },
+
+                    // 削除
                     onDelete = { phrase ->
                         viewModel.deletePhrase(phrase)
                         navController.popBackStack()
                     },
-                    onBack = { navController.popBackStack() },
+
+                    // 前画面へ戻る
+                    onBack = {
+                        navController.popBackStack()
+                    },
+
                     onMessageShown = viewModel::clearMessage
                 )
             }
+
+            // カード閲覧画面
             composable(Screen.Card.route) {
                 CardScreen(
                     paddingValues = paddingValues,
@@ -125,16 +233,17 @@ fun PhraseCollectionApp(viewModel: PhraseViewModel) {
                     phrases = uiState.allPhrases
                 )
             }
+
+            // 設定画面
             composable(Screen.Setting.route) {
-                SettingScreen(paddingValues = paddingValues)
+                SettingScreen(
+                    paddingValues = paddingValues
+                )
             }
         }
     }
 }
 
-/**
- * Returns compact text symbols for bottom navigation items.
- */
 private fun tabIcon(screen: Screen): String =
     when (screen) {
         Screen.List -> "≡"

@@ -29,7 +29,14 @@ import com.renat.phrasecollection.ui.component.PhraseListItem
 import com.renat.phrasecollection.viewmodel.PhraseUiState
 
 /**
- * Shows saved phrases with search, category filters, edit, delete, and add actions.
+ * フレーズ一覧画面
+ *
+ * 機能
+ * ・フレーズ一覧表示
+ * ・検索
+ * ・カテゴリフィルタ
+ * ・編集
+ * ・削除
  */
 @Composable
 fun ListScreen(
@@ -38,12 +45,15 @@ fun ListScreen(
     onSearchChange: (String) -> Unit,
     onToggleCategory: (Int) -> Unit,
     onClearCategories: () -> Unit,
-    onAddClick: () -> Unit,
     onEditClick: (Long) -> Unit,
     onDeleteClick: (PhraseEntity) -> Unit,
     onMessageShown: () -> Unit
 ) {
+
+    // Snackbar表示用
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // ViewModelから通知メッセージを受け取ったら表示
     LaunchedEffect(uiState.message) {
         uiState.message?.let {
             snackbarHostState.showSnackbar(it)
@@ -53,12 +63,9 @@ fun ListScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            Button(onClick = onAddClick) {
-                Text("新規登録")
-            }
-        }
     ) { innerPadding ->
+
+        // 画面全体をスクロール可能な一覧として構成
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -67,39 +74,47 @@ fun ListScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
+            // =========================
+            // 検索・フィルタエリア
+            // =========================
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+                    // 画面タイトル
                     Text(
-                        text = "Phrase Collection App",
+                        text = "単語帳アプリ",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
-                    Button(
-                        onClick = onAddClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("フレーズを登録")
-                    }
+
+                    // フレーズ・メモ検索
                     OutlinedTextField(
                         value = uiState.searchQuery,
                         onValueChange = onSearchChange,
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         label = { Text("検索") },
-                        placeholder = { Text("フレーズまたはメモ") }
+                        placeholder = { Text("フレーズまたはメモで検索") }
                     )
+
+                    // カテゴリ見出しと解除ボタン
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
                             text = "カテゴリ",
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.titleSmall
                         )
+
+                        // カテゴリ選択中のみ表示
                         if (uiState.selectedCategoryIds.isNotEmpty()) {
                             TextButton(onClick = onClearCategories) {
                                 Text("解除")
                             }
                         }
                     }
+
+                    // カテゴリフィルタチップ
                     CategoryChips(
                         categories = uiState.categories,
                         selectedIds = uiState.selectedCategoryIds,
@@ -107,19 +122,40 @@ fun ListScreen(
                     )
                 }
             }
+
+            // =========================
+            // フレーズ一覧
+            // =========================
+
+            // データなし
             if (uiState.phrases.isEmpty()) {
+
                 item {
                     Text(
                         text = "保存済みのフレーズはありません。",
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
+
             } else {
-                items(uiState.phrases, key = { it.phrase.id }) { phrase ->
+
+                // フレーズ一覧表示
+                items(
+                    uiState.phrases,
+                    key = { it.phrase.id }
+                ) { phrase ->
+
+                    // リストを表示する
                     PhraseListItem(
                         phrase = phrase,
+
+                        // 編集画面へ遷移
                         onEditClick = onEditClick,
-                        onDeleteClick = { onDeleteClick(phrase.phrase) }
+
+                        // 削除実行
+                        onDeleteClick = {
+                            onDeleteClick(phrase.phrase)
+                        }
                     )
                 }
             }
