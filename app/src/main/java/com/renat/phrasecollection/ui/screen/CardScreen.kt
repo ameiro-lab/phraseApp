@@ -27,6 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.renat.phrasecollection.data.entity.CategoryEntity
@@ -137,7 +139,7 @@ fun CardScreen(
                 if (showBack) {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Text(
-                            text = "答え",
+                            text = "意味",
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.primary,
                             textAlign = TextAlign.Center
@@ -159,7 +161,10 @@ fun CardScreen(
                 } else {
                     Text(
                         text = current.phrase.text,
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = FontFamily.Serif,
+                            letterSpacing = 0.3.sp
+                        ),
                         fontWeight = FontWeight.SemiBold,
                         textAlign = TextAlign.Center
                     )
@@ -172,7 +177,7 @@ fun CardScreen(
             textAlign = TextAlign.Center
         )
         Text(
-            text = "タップで問題/答えを切り替え。上スワイプで次、下スワイプで前。",
+            text = "タップで問題/を意味を切り替え。上スワイプで次、下スワイプで前。",
             style = MaterialTheme.typography.bodySmall
         )
     }

@@ -19,6 +19,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.sp
 import com.renat.phrasecollection.model.PhraseWithCategories
 
 /**
@@ -58,10 +60,13 @@ fun PhraseListItem(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
-            // フレーズ本文
+            // フレーズ本文(英語フレーズ用にフォントを指定)
             Text(
                 text = phrase.phrase.text,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily.Serif,
+                    letterSpacing = 0.3.sp
+                ),
                 fontWeight = FontWeight.SemiBold
             )
 
