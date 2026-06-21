@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install Debug",
+      "type": "shell",
+      "command": ".\\gradlew.bat",
+      "args": [
+        ":app:installDebug"
+      ]
+    },
+    {
+      "label": "Launch App",
+      "type": "shell",
+      "command": "adb",
+      "args": [
+        "shell",
+        "am",
+        "start",
+        "-n",
+        "com.renat.phrasecollection/.MainActivity"
+      ]
+    },
+    {
+      "label": "Android Run",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Install Debug",
+        "Launch App"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
