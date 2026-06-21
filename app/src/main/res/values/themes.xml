@@ -2,7 +2,9 @@
 <resources>
     <style name="Theme.PhraseCollection" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:windowLightStatusBar">true</item>
+        <!-- カスタム色: アプリ起動直後やシステム領域に使うステータスバー色 -->
         <item name="android:statusBarColor">#F6F8FB</item>
+        <!-- カスタム色: Androidシステムのナビゲーションバー色 -->
         <item name="android:navigationBarColor">#FFFFFF</item>
     </style>
 </resources>
